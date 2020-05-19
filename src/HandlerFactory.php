@@ -8,8 +8,12 @@ use function Safe\preg_match;
 
 class HandlerFactory
 {
-    /** @var array<string, mixed> */
-    private array $config;
+    /**
+     * @internal
+     *
+     * @var array<string, mixed>
+     */
+    protected array $config;
 
     /**
      * @param array<string, mixed> $configurations
