@@ -103,7 +103,8 @@ class RequestHandler implements RequestHandlerInterface
 
         $headers = $request->headers->get('Access-Control-Request-Headers');
         if (! empty($headers)) {
-            $response->headers->set('Access-Control-Allow-Headers', $this->filterHeaders(array_map('trim', explode(',', $headers))));
+            $headers = $this->filterHeaders(array_map('trim', explode(',', $headers)));
+            $response->headers->set('Access-Control-Allow-Headers', implode(',', $headers));
         }
 
         $response->headers->set('Access-Control-Expose-Headers', $this->exposedHeaders);
