@@ -7,6 +7,7 @@ namespace Solido\Cors;
 use Solido\Cors\Exception\InvalidOriginException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+
 use function array_filter;
 use function array_map;
 use function explode;
