@@ -29,11 +29,12 @@ class HandlerFactory
     public function factory(string $path, string $host): ?RequestHandlerInterface
     {
         $configuration = $this->config;
-        foreach ($this->config['paths'] as $pathRegex => $config) {
+        foreach ($this->config['paths'] as $config) {
             if (isset($config['host']) && ! preg_match('#' . $config['host'] . '#', $host)) {
                 continue;
             }
 
+            $pathRegex = $config['path'];
             if (! preg_match('#' . $pathRegex . '#', $path)) {
                 continue;
             }

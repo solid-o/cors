@@ -15,12 +15,14 @@ class HandlerFactoryTest extends TestCase
             'allow_credentials' => false,
             'max_age' => 100,
             'paths' => [
-                '^/api/' => [
+                [
+                    'path' => '^/api/',
                     'allow_origin' => ['*'],
                     'allow_headers' => ['X-User-Auth'],
                     'max_age' => 0,
                 ],
-                '^/api_on_second/' => [
+                [
+                    'path' => '^/api_on_second/',
                     'max_age' => 300,
                     'host' => 'test.example.org',
                 ]
@@ -86,7 +88,8 @@ class HandlerFactoryTest extends TestCase
             'max_age' => 100,
             'enabled' => false,
             'paths' => [
-                '^/api/' => [
+                [
+                    'path' => '^/api/',
                     'allow_origin' => ['*'],
                     'allow_headers' => ['X-User-Auth'],
                     'max_age' => 0,
