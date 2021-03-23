@@ -42,6 +42,11 @@
     "config": {
         "sort-packages": true
     },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "0.1.x-dev"
+        }
+    },
     "archive": {
         "exclude": [ ".gitignore", ".travis.yml", "tests" ]
     }
