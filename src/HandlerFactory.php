@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Solido\Cors;
 
+use Solido\Common\AdapterFactory;
+use Solido\Common\AdapterFactoryInterface;
+
 use function Safe\preg_match;
 
 class HandlerFactory
@@ -14,6 +17,7 @@ class HandlerFactory
      * @var array<string, mixed>
      */
     protected array $config;
+    private AdapterFactoryInterface $adapterFactory;
 
     /**
      * @param array<string, mixed> $configurations
@@ -21,6 +25,12 @@ class HandlerFactory
     public function __construct(array $configurations = [])
     {
         $this->config = (new Configuration())->process($configurations);
+        $this->adapterFactory = new AdapterFactory();
+    }
+
+    public function setAdapterFactory(AdapterFactoryInterface $adapterFactory): void
+    {
+        $this->adapterFactory = $adapterFactory;
     }
 
     /**
@@ -46,12 +56,16 @@ class HandlerFactory
             return null;
         }
 
-        return new RequestHandler(
+        $handler = new RequestHandler(
             $configuration['allow_credentials'] ?? $this->config['allow_credentials'],
             $configuration['allow_origin'] ?? $this->config['allow_origin'],
             $configuration['allow_headers'] ?? $this->config['allow_headers'],
             $configuration['expose_headers'] ?? $this->config['expose_headers'],
             $configuration['max_age'] ?? $this->config['max_age']
         );
+
+        $handler->setAdapterFactory($this->adapterFactory);
+
+        return $handler;
     }
 }

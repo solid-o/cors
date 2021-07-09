@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Solido\Cors;
 
+use Solido\Common\AdapterFactory;
+use Solido\Common\AdapterFactoryInterface;
 use Solido\Cors\Exception\InvalidOriginException;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
 
 use function array_filter;
 use function array_map;
@@ -21,6 +21,7 @@ use function strlen;
 
 class RequestHandler implements RequestHandlerInterface
 {
+    private AdapterFactoryInterface $adapterFactory;
     private bool $allowCredentials;
     private string $allowedOrigins;
     private string $exposedHeaders;
@@ -36,6 +37,7 @@ class RequestHandler implements RequestHandlerInterface
      */
     public function __construct(bool $allowCredentials = true, array $allowOrigins = ['*'], array $allowHeaders = [], array $exposeHeaders = [], int $maxAge = 0)
     {
+        $this->adapterFactory = new AdapterFactory();
         if (! empty($allowOrigins)) {
             $allowedOrigins = (static fn (string ...$origins) => $origins)(...$allowOrigins);
             $allowedOrigins = '#^(?:' . implode('|', array_map(fn (string $origin) => $this->toRegex($origin), $allowedOrigins)) . ')$#';
@@ -48,75 +50,87 @@ class RequestHandler implements RequestHandlerInterface
         $this->maxAge = $maxAge;
     }
 
-    public function handleCorsRequest(Request $request, string $allowedMethods = 'GET, POST, HEAD, PUT, PATCH, DELETE'): Response
+    public function setAdapterFactory(AdapterFactoryInterface $adapterFactory): void
     {
-        $origin = $request->headers->get('Origin');
-        if ($origin === null || $origin === '*') {
-            throw new InvalidOriginException('Given origin is not valid.');
-        }
-
-        if ($this->allowedOrigins === '#^(?:.*)$#') {
-            $origin = '*';
-        } elseif (! $this->isValidOrigin($origin)) {
-            throw new InvalidOriginException('Given origin is not valid.');
-        }
-
-        $response = Response::create();
-        $response->headers->set('Access-Control-Allow-Credentials', $this->allowCredentials ? 'true' : 'false');
-        $response->headers->set('Access-Control-Allow-Origin', $origin);
-        $response->headers->set('Access-Control-Allow-Methods', $allowedMethods);
-        $response->headers->set('Access-Control-Max-Age', (string) $this->maxAge);
-        $response->headers->set('Allow', $allowedMethods);
-
-        $headers = $request->headers->get('Access-Control-Request-Headers');
-        if (! empty($headers)) {
-            $response->headers->set('Access-Control-Allow-Headers', $this->filterHeaders(array_map('trim', explode(',', $headers))));
-        }
-
-        $response->headers->set('Access-Control-Expose-Headers', $this->exposedHeaders);
-
-        $vary = $response->getVary();
-        if ($origin !== '*' && ! in_array('Origin', $vary, true)) {
-            $vary[] = 'Origin';
-            $response->setVary($vary);
-        }
-
-        return $response;
+        $this->adapterFactory = $adapterFactory;
     }
 
-    public function enhanceResponse(Request $request, Response $response): void
+    public function handleCorsRequest(object $request, string $allowedMethods = 'GET, POST, HEAD, PUT, PATCH, DELETE'): object
     {
-        $origin = $request->headers->get('Origin');
+        $adapter = $this->adapterFactory->createRequestAdapter($request);
+        $origin = $adapter->getHeader('Origin')[0] ?? null;
         if ($origin === null || $origin === '*') {
-            return;
+            throw new InvalidOriginException('Given origin is not valid.');
         }
 
         if ($this->allowedOrigins === '#^(?:.*)$#') {
             $origin = '*';
         } elseif (! $this->isValidOrigin($origin)) {
-            return;
+            throw new InvalidOriginException('Given origin is not valid.');
         }
 
-        $response->headers->set('Access-Control-Allow-Credentials', $this->allowCredentials ? 'true' : 'false');
-        $response->headers->set('Access-Control-Allow-Origin', $origin);
-        $response->headers->set('Access-Control-Max-Age', (string) $this->maxAge);
-        $response->headers->set('Access-Control-Expose-Headers', $this->exposedHeaders);
+        $response = $adapter->createResponse();
+        $response->setHeaders([
+            'Access-Control-Allow-Credentials' => $this->allowCredentials ? 'true' : 'false',
+            'Access-Control-Allow-Origin' => $origin,
+            'Access-Control-Allow-Methods' => $allowedMethods,
+            'Access-Control-Max-Age' => (string) $this->maxAge,
+            'Allow' => $allowedMethods,
+        ]);
 
-        $headers = $request->headers->get('Access-Control-Request-Headers');
+        $headers = $adapter->getHeader('Access-Control-Request-Headers')[0] ?? null;
+        if (! empty($headers)) {
+            $response->setHeaders(['Access-Control-Allow-Headers' => $this->filterHeaders(array_map('trim', explode(',', $headers)))]);
+        }
+
+        $response->setHeaders(['Access-Control-Expose-Headers' => $this->exposedHeaders]);
+
+        $vary = $response->getHeader('Vary');
+        if ($origin !== '*' && ! in_array('Origin', $vary, true)) {
+            $vary[] = 'Origin';
+            $response->setHeaders(['Vary' => $vary]);
+        }
+
+        return $response->unwrap();
+    }
+
+    public function enhanceResponse(object $request, object $response): object
+    {
+        $request = $this->adapterFactory->createRequestAdapter($request);
+        $origin = $request->getHeader('Origin')[0] ?? null;
+        if ($origin === null || $origin === '*') {
+            return $response;
+        }
+
+        if ($this->allowedOrigins === '#^(?:.*)$#') {
+            $origin = '*';
+        } elseif (! $this->isValidOrigin($origin)) {
+            return $response;
+        }
+
+        $response = $this->adapterFactory->createResponseAdapter($response);
+        $response->setHeaders([
+            'Access-Control-Allow-Credentials' => $this->allowCredentials ? 'true' : 'false',
+            'Access-Control-Allow-Origin' => $origin,
+            'Access-Control-Max-Age' => (string) $this->maxAge,
+            'Access-Control-Expose-Headers' => $this->exposedHeaders,
+        ]);
+
+        $headers = $request->getHeader('Access-Control-Request-Headers')[0] ?? null;
         if (! empty($headers)) {
             $headers = $this->filterHeaders(array_map('trim', explode(',', $headers)));
-            $response->headers->set('Access-Control-Allow-Headers', implode(',', $headers));
+            $response->setHeaders(['Access-Control-Allow-Headers' => implode(',', $headers)]);
         }
 
-        $response->headers->set('Access-Control-Expose-Headers', $this->exposedHeaders);
+        $response->setHeaders(['Access-Control-Expose-Headers' => $this->exposedHeaders]);
 
-        $vary = $response->getVary();
-        if ($origin === '*' || in_array('Origin', $vary, true)) {
-            return;
+        $vary = $response->getHeader('Vary');
+        if ($origin !== '*' && ! in_array('Origin', $vary, true)) {
+            $vary[] = 'Origin';
+            $response->setHeaders(['Vary' => $vary]);
         }
 
-        $vary[] = 'Origin';
-        $response->setVary($vary);
+        return $response->unwrap();
     }
 
     /**

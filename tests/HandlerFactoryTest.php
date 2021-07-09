@@ -2,6 +2,8 @@
 
 namespace Solido\Cors\Tests;
 
+use Nyholm\Psr7\Factory\Psr17Factory;
+use Solido\Common\AdapterFactory;
 use Solido\Cors\HandlerFactory;
 use PHPUnit\Framework\TestCase;
 use Solido\Cors\RequestHandlerInterface;
@@ -32,6 +34,7 @@ class HandlerFactoryTest extends TestCase
         $request = Request::create('/not_an_api');
         $request->headers->set('Origin', 'http://localhost');
 
+        $factory->setAdapterFactory(new AdapterFactory(new Psr17Factory()));
         $handler = $factory->factory($request->getPathInfo(), $request->getHost());
         self::assertInstanceOf(RequestHandlerInterface::class, $handler);
         $response = $handler->handleCorsRequest($request);
