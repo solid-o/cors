@@ -9,7 +9,7 @@ use Solido\Common\AdapterFactoryInterface;
 
 use function Safe\preg_match;
 
-class HandlerFactory
+class HandlerFactory implements HandlerFactoryInterface
 {
     /**
      * @internal
@@ -33,9 +33,6 @@ class HandlerFactory
         $this->adapterFactory = $adapterFactory;
     }
 
-    /**
-     * Creates a new RequestHandler based on passed path.
-     */
     public function factory(string $path, string $host): ?RequestHandlerInterface
     {
         $configuration = $this->config;
