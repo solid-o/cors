@@ -9,15 +9,12 @@ use Nyholm\Psr7\Response;
 use Nyholm\Psr7\ServerRequest;
 use PHPUnit\Framework\TestCase;
 use Prophecy\PhpUnit\ProphecyTrait;
-use Prophecy\Prophecy\ObjectProphecy;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Server\RequestHandlerInterface;
 use Solido\Common\AdapterFactory;
 use Solido\Cors\HandlerFactory;
-use Solido\Cors\HandlerFactoryInterface;
 use Solido\Cors\Middleware\CorsMiddleware;
-use Solido\Cors\RequestHandlerInterface;
-use Symfony\Component\HttpFoundation\Request;
 
 class CorsMiddlewareTest extends TestCase
 {
@@ -41,7 +38,7 @@ class CorsMiddlewareTest extends TestCase
                     'path' => '^/api_on_second/',
                     'max_age' => 300,
                     'host' => 'test.example.org',
-                ]
+                ],
             ],
         ]);
 
@@ -87,7 +84,7 @@ class CorsMiddlewareTest extends TestCase
     }
 }
 
-class RequestHandler implements \Psr\Http\Server\RequestHandlerInterface
+class RequestHandler implements RequestHandlerInterface
 {
     private ResponseInterface $response;
 

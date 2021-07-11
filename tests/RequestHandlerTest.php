@@ -1,13 +1,15 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Solido\Cors\Tests;
 
 use Nyholm\Psr7;
 use Nyholm\Psr7\Factory\Psr17Factory;
+use PHPUnit\Framework\TestCase;
 use Solido\Common\AdapterFactory;
 use Solido\Cors\Exception\InvalidOriginException;
 use Solido\Cors\RequestHandler;
-use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 

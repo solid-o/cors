@@ -1,11 +1,13 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Solido\Cors\Tests;
 
 use Nyholm\Psr7\Factory\Psr17Factory;
+use PHPUnit\Framework\TestCase;
 use Solido\Common\AdapterFactory;
 use Solido\Cors\HandlerFactory;
-use PHPUnit\Framework\TestCase;
 use Solido\Cors\RequestHandlerInterface;
 use Symfony\Component\HttpFoundation\Request;
 
@@ -27,7 +29,7 @@ class HandlerFactoryTest extends TestCase
                     'path' => '^/api_on_second/',
                     'max_age' => 300,
                     'host' => 'test.example.org',
-                ]
+                ],
             ],
         ]);
 
@@ -81,7 +83,6 @@ class HandlerFactoryTest extends TestCase
 
         self::assertEquals(100, $response->headers->get('Access-Control-Max-Age'));
         self::assertEquals('false', $response->headers->get('Access-Control-Allow-Credentials'));
-
     }
 
     public function testCanReturnNullIfDisabled(): void
