@@ -16,7 +16,6 @@ class Configuration
     {
         $this->treeBuilder = new TreeBuilder('cors_configuration');
         $rootNode = $this->treeBuilder->getRootNode();
-        $rootNode->addDefaultsIfNotSet();
 
         self::buildTree($rootNode->children());
     }
@@ -70,6 +69,7 @@ class Configuration
      * @param mixed[] $configurations
      *
      * @return mixed[]
+     * @phpstan-return array{enabled: bool, allow_credentials: bool, allow_origin: string[], allow_headers: string[], expose_headers: string[], max_age: int, paths: array{enabled: bool, allow_credentials?: bool, host?: string, path: string, allow_origin?: string[], allow_headers?: string[], expose_headers?: string[], max_age?: int}[]}
      */
     public function process(array $configurations): array
     {

@@ -15,6 +15,7 @@ class HandlerFactory implements HandlerFactoryInterface
      * @internal
      *
      * @var array<string, mixed>
+     * @phpstan-var array{enabled: bool, allow_credentials: bool, allow_origin: string[], allow_headers: string[], expose_headers: string[], max_age: int, paths: array{enabled: bool, allow_credentials?: bool, host?: string, path: string, allow_origin?: string[], allow_headers?: string[], expose_headers?: string[], max_age?: int}[]}
      */
     protected array $config;
     private AdapterFactoryInterface $adapterFactory;
@@ -47,6 +48,7 @@ class HandlerFactory implements HandlerFactoryInterface
             }
 
             $configuration = $config;
+            break;
         }
 
         if ($configuration['enabled'] === false) {

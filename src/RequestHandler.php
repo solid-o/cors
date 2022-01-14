@@ -13,11 +13,11 @@ use function array_map;
 use function explode;
 use function implode;
 use function in_array;
-use function mb_strtolower;
 use function preg_quote;
 use function Safe\array_flip;
 use function Safe\preg_match;
 use function strlen;
+use function strtolower;
 
 class RequestHandler implements RequestHandlerInterface
 {
@@ -35,15 +35,17 @@ class RequestHandler implements RequestHandlerInterface
      * @param string[] $allowHeaders
      * @param string[] $exposeHeaders
      */
-    public function __construct(bool $allowCredentials = true, array $allowOrigins = ['*'], array $allowHeaders = [], array $exposeHeaders = [], int $maxAge = 0)
+    public function __construct(bool $allowCredentials = true, array $allowOrigins = [], array $allowHeaders = [], array $exposeHeaders = [], int $maxAge = 0)
     {
         $this->adapterFactory = new AdapterFactory();
+
         if (! empty($allowOrigins)) {
             $allowedOrigins = (static fn (string ...$origins) => $origins)(...$allowOrigins);
-            $allowedOrigins = '#^(?:' . implode('|', array_map(fn (string $origin) => $this->toRegex($origin), $allowedOrigins)) . ')$#';
+            $this->allowedOrigins = '#^(?:' . implode('|', array_map(fn (string $origin) => $this->toRegex($origin), $allowedOrigins)) . ')$#';
+        } else {
+            $this->allowedOrigins = '#^(?:.*)$#';
         }
 
-        $this->allowedOrigins = $allowedOrigins ?? '#^(?:.*)$#';
         $this->allowCredentials = $allowCredentials;
         $this->allowHeaders = array_flip(array_map('mb_strtolower', $allowHeaders));
         $this->exposedHeaders = implode(', ', $exposeHeaders);
@@ -85,10 +87,8 @@ class RequestHandler implements RequestHandlerInterface
 
         $response->setHeaders(['Access-Control-Expose-Headers' => $this->exposedHeaders]);
 
-        $vary = $response->getHeader('Vary');
-        if ($origin !== '*' && ! in_array('Origin', $vary, true)) {
-            $vary[] = 'Origin';
-            $response->setHeaders(['Vary' => $vary]);
+        if ($origin !== '*') {
+            $response->setHeaders(['Vary' => 'Origin']);
         }
 
         return $response->unwrap();
@@ -122,10 +122,8 @@ class RequestHandler implements RequestHandlerInterface
             $response->setHeaders(['Access-Control-Allow-Headers' => implode(',', $headers)]);
         }
 
-        $response->setHeaders(['Access-Control-Expose-Headers' => $this->exposedHeaders]);
-
         $vary = $response->getHeader('Vary');
-        if ($origin !== '*' && ! in_array('Origin', $vary, true)) {
+        if ($origin !== '*' && ! in_array('origin', array_map('strtolower', $vary), true)) {
             $vary[] = 'Origin';
             $response->setHeaders(['Vary' => $vary]);
         }
@@ -142,7 +140,7 @@ class RequestHandler implements RequestHandlerInterface
      */
     private function filterHeaders(array $headers): array
     {
-        return array_filter($headers, fn (string $header) => isset($this->allowHeaders[mb_strtolower($header)]));
+        return array_filter($headers, fn (string $header) => isset($this->allowHeaders[strtolower($header)]));
     }
 
     /**
@@ -165,6 +163,7 @@ class RequestHandler implements RequestHandlerInterface
                 $char = '.';
             } elseif ($char === '\\') {
                 $escaping = true;
+                continue;
             } else {
                 $char = preg_quote($char, '#');
             }

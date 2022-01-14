@@ -82,6 +82,20 @@ class CorsMiddlewareTest extends TestCase
         self::assertEquals(['false'], $response->getHeader('Access-Control-Allow-Credentials'));
         self::assertEquals(['X-User-Auth'], $response->getHeader('Access-Control-Allow-Headers'));
     }
+
+    public function testShouldNotAppendAllowedMethodsOnNonOptionsRequests(): void
+    {
+        $request = (new ServerRequest('GET', 'http://localhost/api/index'))
+            ->withHeader('Origin', 'http://localhost')
+            ->withHeader('Access-Control-Request-Headers', 'Authorization, X-User-Auth');
+
+        $response = $this->middleware->process($request, new RequestHandler(new Response(405, ['Allow' => 'GET, POST'])));
+
+        self::assertEquals(['0'], $response->getHeader('Access-Control-Max-Age'));
+        self::assertEquals([], $response->getHeader('Access-Control-Allow-Methods'));
+        self::assertEquals(['false'], $response->getHeader('Access-Control-Allow-Credentials'));
+        self::assertEquals(['X-User-Auth'], $response->getHeader('Access-Control-Allow-Headers'));
+    }
 }
 
 class RequestHandler implements RequestHandlerInterface
