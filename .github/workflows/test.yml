@@ -12,6 +12,7 @@ jobs:
                 php_version:
                     - '7.4'
                     - '8.0'
+                    - '8.1'
 
         name: PHP ${{ matrix.php_version }}
         steps:
@@ -23,10 +24,13 @@ jobs:
               uses: shivammathur/setup-php@v2
               with:
                   php-version: ${{ matrix.php_version }}
-                  extensions: :opcache
+                  tools: infection
+                  ini-values: zend.assertions=1,assert.exception=1,assert.active=1
+                  coverage: pcov
 
             - run: composer install
-            - run: vendor/bin/phpunit --coverage-clover phpunit/phpunit.coverage.xml --log-junit phpunit/junit.xml
+            - run: vendor/bin/phpunit --coverage-clover phpunit/phpunit.coverage.xml --coverage-xml phpunit/coverage-xml --log-junit phpunit/junit.xml
+            - run: infection --threads=4 --logger-github --coverage=phpunit
 
             - name: Set repository name
               id: repository-name
