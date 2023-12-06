@@ -15,11 +15,8 @@ use function assert;
 
 class CorsMiddleware implements MiddlewareInterface
 {
-    private HandlerFactoryInterface $handlerFactory;
-
-    public function __construct(HandlerFactoryInterface $handlerFactory)
+    public function __construct(private HandlerFactoryInterface $handlerFactory)
     {
-        $this->handlerFactory = $handlerFactory;
     }
 
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
@@ -35,7 +32,7 @@ class CorsMiddleware implements MiddlewareInterface
         if ($request->getMethod() === 'OPTIONS' && $response->getStatusCode() === 405) {
             try {
                 $response = $corsHandler->handleCorsRequest($request, $response->getHeader('Allow')[0] ?? '');
-            } catch (InvalidOriginException $e) {
+            } catch (InvalidOriginException) {
                 // @ignoreException
             }
         } else {

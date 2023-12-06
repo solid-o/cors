@@ -19,20 +19,20 @@
         "csfix": "vendor/bin/phpcbf --standard=Solido src/"
     },
     "require": {
-        "php": "^7.4 || ^8.0",
-        "solido/common": "^0.2 || ^0.3",
-        "symfony/config": "^4.4 || ^5.0 || ^6.0"
+        "php": "^8.1",
+        "solido/common": "^0.3 || ^0.4",
+        "symfony/config": "^5.4 || ^6.0 || ^7.0"
     },
     "require-dev": {
         "nyholm/psr7": "^1.0",
         "phpspec/prophecy-phpunit": "^2.0",
-        "phpunit/phpunit": "9.4",
+        "phpunit/phpunit": "^9.4",
         "psr/http-factory": "^1.0",
         "psr/http-message": "^1.0",
         "psr/http-server-middleware": "^1.0",
         "roave/security-advisories": "dev-master",
         "solido/php-coding-standards": "dev-master",
-        "symfony/http-foundation": "^4.4 || ^5.0 || ^6.0"
+        "symfony/http-foundation": "^5.4 || ^6.0 || ^7.0"
     },
     "autoload": {
         "psr-4": {
@@ -53,10 +53,10 @@
     },
     "extra": {
         "branch-alias": {
-            "dev-master": "0.3.x-dev"
+            "dev-master": "0.4.x-dev"
         }
     },
     "archive": {
-        "exclude": [ ".gitignore", ".travis.yml", "tests" ]
+        "exclude": [ ".gitignore", ".github", "tests" ]
     }
 }

@@ -9,5 +9,5 @@ interface HandlerFactoryInterface
     /**
      * Creates a new RequestHandler based on passed path.
      */
-    public function factory(string $path, string $host): ?RequestHandlerInterface;
+    public function factory(string $path, string $host): RequestHandlerInterface|null;
 }

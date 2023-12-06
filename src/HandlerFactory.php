@@ -20,9 +20,7 @@ class HandlerFactory implements HandlerFactoryInterface
     protected array $config;
     private AdapterFactoryInterface $adapterFactory;
 
-    /**
-     * @param array<string, mixed> $configurations
-     */
+    /** @param array<string, mixed> $configurations */
     public function __construct(array $configurations = [])
     {
         $this->config = (new Configuration())->process($configurations);
@@ -34,7 +32,7 @@ class HandlerFactory implements HandlerFactoryInterface
         $this->adapterFactory = $adapterFactory;
     }
 
-    public function factory(string $path, string $host): ?RequestHandlerInterface
+    public function factory(string $path, string $host): RequestHandlerInterface|null
     {
         $configuration = $this->config;
         foreach ($this->config['paths'] as $config) {
@@ -60,7 +58,7 @@ class HandlerFactory implements HandlerFactoryInterface
             $configuration['allow_origin'] ?? $this->config['allow_origin'],
             $configuration['allow_headers'] ?? $this->config['allow_headers'],
             $configuration['expose_headers'] ?? $this->config['expose_headers'],
-            $configuration['max_age'] ?? $this->config['max_age']
+            $configuration['max_age'] ?? $this->config['max_age'],
         );
 
         $handler->setAdapterFactory($this->adapterFactory);

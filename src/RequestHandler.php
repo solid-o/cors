@@ -22,11 +22,8 @@ use function strtolower;
 class RequestHandler implements RequestHandlerInterface
 {
     private AdapterFactoryInterface $adapterFactory;
-    private bool $allowCredentials;
     private string $allowedOrigins;
     private string $exposedHeaders;
-    private int $maxAge;
-
     /** @var array<string, mixed> */
     private array $allowHeaders;
 
@@ -35,7 +32,7 @@ class RequestHandler implements RequestHandlerInterface
      * @param string[] $allowHeaders
      * @param string[] $exposeHeaders
      */
-    public function __construct(bool $allowCredentials = true, array $allowOrigins = [], array $allowHeaders = [], array $exposeHeaders = [], int $maxAge = 0)
+    public function __construct(private bool $allowCredentials = true, array $allowOrigins = [], array $allowHeaders = [], array $exposeHeaders = [], private int $maxAge = 0)
     {
         $this->adapterFactory = new AdapterFactory();
 
@@ -46,10 +43,8 @@ class RequestHandler implements RequestHandlerInterface
             $this->allowedOrigins = '#^(?:.*)$#';
         }
 
-        $this->allowCredentials = $allowCredentials;
         $this->allowHeaders = array_flip(array_map('mb_strtolower', $allowHeaders));
         $this->exposedHeaders = implode(', ', $exposeHeaders);
-        $this->maxAge = $maxAge;
     }
 
     public function setAdapterFactory(AdapterFactoryInterface $adapterFactory): void
